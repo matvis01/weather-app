@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react"
 import axios from "axios"
 import { location } from "../types/location"
-import { WeatherForecast, WeatherDetails } from "../types/weather"
+import { WeatherForecast, SunData } from "../types/weather"
 
 type weatherScreenProps = {
   location: location | undefined
@@ -23,6 +23,7 @@ const months = [
 
 function weatherScreen({ location }: weatherScreenProps) {
   const [weather, setWeather] = useState<WeatherForecast[]>()
+  const [sunInfo, setSunInfo] = useState<SunData>()
   const currentWeather = weather?.[0].data.instant.details
   useEffect(() => {
     async function fetchData() {
@@ -32,6 +33,10 @@ function weatherScreen({ location }: weatherScreenProps) {
           `https://api.met.no/weatherapi/locationforecast/2.0/complete?lat=${location.lat}&lon=${location.lon}`
         )
         setWeather(response.data.properties.timeseries)
+        const sunDataResponse = await axios.get(
+          `https://api.met.no/weatherapi/sunrise/3.0/sun?lat=${location.lat}&lon=${location.lon}`
+        )
+        setSunInfo(sunDataResponse.data)
       } catch (error) {
         console.log(error)
       }
@@ -41,16 +46,19 @@ function weatherScreen({ location }: weatherScreenProps) {
   const currentDate = new Date()
   const dayOfWeek = currentDate.getDay()
   const month = currentDate.getMonth()
+  const dayOfMonth = currentDate.getDate()
 
   const next5hours = weather?.slice(2, 7).map((element, i) => {
     return (
-      <div className="flex flex-col justify-center items-center py-2">
+      <div className=" flex flex-col justify-center items-center py-2">
         {i == 0 ? (
           <p> now</p>
         ) : (
-          <p>{element.time.match(/T(\d{2})/)?.slice(1)}</p>
+          <p>{element.time.match(/T(\d{2})/)?.slice(1)}:00</p>
         )}
-        <p>{element.data.instant.details.air_temperature}°</p>
+        <p className="font-bold">
+          {element.data.instant.details.air_temperature}°
+        </p>
       </div>
     )
   })
@@ -78,39 +86,103 @@ function weatherScreen({ location }: weatherScreenProps) {
       const maxTemp = Math.max(...maxTemps)
       const minTemp = Math.min(...minTemps)
       const conditions: string =
-        recordingOfTheDay[1]?.data.next_12_hours.summary.symbol_code
+        recordingOfTheDay[2]?.data.next_12_hours.summary.symbol_code
       const imageSrc = require(`../../public/assets/png/${conditions}.png`)
         .default.src
+      const precipitation =
+        recordingOfTheDay[2]?.data.next_6_hours.details.precipitation_amount
       recordingOfTheDay = []
       return (
-        <div className="flex justify-around items-center " key={i}>
+        <div
+          className="grid grid-cols-3 justify-around items-center px-2  pl-8 "
+          key={i}
+        >
           <p className="">{daysOfWeek[dayOfWeek]}</p>
-          <img src={imageSrc} alt={conditions} className="h-5" />
-          <div className="flex  items-center gap-3">
-            <p>{maxTemp}</p>
-            <p>{minTemp}</p>
+          <div className=" flex gap-2">
+            <img src={imageSrc} alt={conditions} className="h-5" />
+            <p className="justify-self-start">
+              {precipitation === 0 || `${precipitation}%`}
+            </p>
+          </div>
+          <div className="grid grid-cols-2">
+            <p>↑ {maxTemp}</p>
+            <p>↓ {minTemp}</p>
           </div>
         </div>
       )
     })
   }, [weather])
 
-  return (
-    <div className="w-full h-full flex flex-col gap-1 p-1 ">
-      <div className=" flex justify-center text-xl items-center">
-        {daysOfWeek[dayOfWeek]},{months[month]} {dayOfWeek}
+  const additionalInfo = (): JSX.Element => {
+    const sunrise = sunInfo?.properties.sunrise.time
+    let sunriseTime = ""
+    if (sunrise) {
+      const date = new Date(sunrise)
+      const hours = date.getUTCHours()
+      const minutes = date.getUTCMinutes()
+      sunriseTime = `${hours}:${minutes}`
+    }
+
+    const sunset = sunInfo?.properties.sunset.time
+    let sunsetTime = ""
+    if (sunset) {
+      const date = new Date(sunset)
+      const hours = date.getUTCHours()
+      const minutes = date.getUTCMinutes()
+      sunsetTime = `${hours}:${minutes}`
+    }
+
+    return (
+      <div className="grid grid-cols-3 pl-8">
+        <div className="flex flex-col">
+          <p>Sunrise</p>
+          <p className="font-bold">{sunriseTime}</p>
+        </div>
+        <div className="flex flex-col">
+          <p>Sunset</p>
+          <p className="font-bold">{sunsetTime}</p>
+        </div>
+        <div className="flex flex-col">
+          <p>Precipitation</p>
+          <p className="font-bold">
+            {weather &&
+              weather[0].data.next_6_hours.details.precipitation_amount}
+            %
+          </p>
+        </div>
+        <div className="flex flex-col">
+          <p>Humidity</p>
+          <p className="font-bold">{currentWeather?.relative_humidity}%</p>
+        </div>
+        <div className="flex flex-col">
+          <p>Wind</p>
+          <p className="font-bold">{currentWeather?.wind_speed}km/h</p>
+        </div>
+        <div className="flex flex-col">
+          <p>Pressure</p>
+          <p className="font-bold">{currentWeather?.air_temperature}hPa</p>
+        </div>
       </div>
-      <div className=" flex-grow flex flex-col justify-evenly border-l-black">
+    )
+  }
+
+  return (
+    <div className="card border border-primary  w-full h-full flex flex-col p-4 ">
+      <div className=" flex justify-center text-xl">
+        {daysOfWeek[dayOfWeek]},{months[month]} {dayOfMonth}
+      </div>
+
+      <div className=" flex-grow flex flex-col justify-evenly pl-6 lg:pl-20">
         {location?.city}
-        <h2 className=" text-6xl">{currentWeather?.air_temperature}°</h2>
+        <h2 className=" text-8xl">{currentWeather?.air_temperature}°</h2>
         {weather && (
           <>
             <div className="flex flex-row gap-3">
               <p>
-                max: {weather[0].data.next_6_hours.details.air_temperature_max}
+                ↑ {weather[0].data.next_6_hours.details.air_temperature_max}
               </p>
               <p>
-                min: {weather[0].data.next_6_hours.details.air_temperature_min}
+                ↓ {weather[0].data.next_6_hours.details.air_temperature_min}
               </p>
             </div>
             <p>
@@ -119,11 +191,23 @@ function weatherScreen({ location }: weatherScreenProps) {
                 " "
               )}
             </p>
+            <img
+              className="absolute aspect-auto right-2 -z-10 h-1/3  "
+              src={
+                require(`../../public/assets/png/${weather[0].data.next_6_hours.summary.symbol_code}.png`)
+                  .default.src
+              }
+              alt={weather[0].data.next_6_hours.summary.symbol_code}
+            />
           </>
         )}
       </div>
+      <div className="divider"></div>
       <div className="flex justify-evenly items-center">{next5hours}</div>
-      <div className="flex-grow">{weekWeather}</div>
+      <div className="divider"></div>
+      <div className="">{weekWeather}</div>
+      <div className="divider"></div>
+      <div className="">{additionalInfo()}</div>
     </div>
   )
 }

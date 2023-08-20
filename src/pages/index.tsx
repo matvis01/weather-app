@@ -11,10 +11,7 @@ import FavoriteLocations from "../components/favoriteLocations"
 const inter = Inter({ subsets: ["latin"] })
 
 const themeSelect = (
-  <select
-    className="select gradientselect select-bordered m-2"
-    data-choose-theme
-  >
+  <select className="select select-primary   m-2" data-choose-theme>
     <option disabled value="cupcake">
       Pick a theme
     </option>
@@ -34,21 +31,27 @@ export default function Home() {
   }, [])
 
   return (
-    <div className=" min-h-screen w-screen gap-2 p-8 flex flex-col mainGrid">
-      {/* <div className="row-span-3 border-2">
-        <NavBar />
-      </div> */}
-      <div className="flex items-center justify-center gap-2 px-2">
+    <div className=" min-h-screen w-full gap-4 p-8 flex flex-col mainGrid">
+      <div className="flex items-center justify-center gap-2 ">
         <CitySearchBox setLocation={(place: location) => setLocation(place)} />
       </div>
-      <div className=" row-span-1 col-span-1  flex justify-end">
+      <div className=" row-span-1 col-span-1  flex justify-end order-first md:order-none">
         {themeSelect}
       </div>
-      <div className="row-span-1 col-span-1 border-2">
-        <MainTemp location={location} />
+      <div className="row-span-1 col-span-1 shadow-xl">
+        {location ? (
+          <MainTemp location={location} />
+        ) : (
+          <div className="flex flex-col items-center justify-center w-full">
+            <h1 className="text-2xl">Search for a location ↑</h1>
+          </div>
+        )}
       </div>
-      <div className="row-span-1 col-span-1  border-2 ">
-        <FavoriteLocations currentLocation={location} />
+      <div className="row-span-1 col-span-1 shadow-xl ">
+        <FavoriteLocations
+          currentLocation={location}
+          changeLocation={(place: location) => setLocation(place)}
+        />
       </div>
     </div>
   )

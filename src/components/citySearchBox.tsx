@@ -156,7 +156,7 @@ const Autocomplete = ({ setLocation }: locationProps) => {
     <div className="flex flex-col items-center justify-center w-full">
       <input
         type="text"
-        className="input input-bordered w-full"
+        className="input input-bordered border-primary w-full"
         placeholder="Search location"
         value={inputValue}
         onChange={(event) => setInputValue(event.target.value)}
@@ -167,7 +167,7 @@ const Autocomplete = ({ setLocation }: locationProps) => {
           {options.map((option, index) => (
             <li
               key={index}
-              className="p-2 cursor-pointer hover:bg-secondary relative z-10"
+              className="p-2 cursor-pointer hover:bg-primary relative z-10"
               onClick={() => {
                 setOptions([])
                 setValue(option)
