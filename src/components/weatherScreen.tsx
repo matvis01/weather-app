@@ -21,7 +21,7 @@ const months = [
   "Dec",
 ]
 
-function weatherScreen({ location }: weatherScreenProps) {
+function WeatherScreen({ location }: weatherScreenProps) {
   const [weather, setWeather] = useState<WeatherForecast[]>()
   const [sunInfo, setSunInfo] = useState<SunData>()
   const currentWeather = weather?.[0].data.instant.details
@@ -50,7 +50,7 @@ function weatherScreen({ location }: weatherScreenProps) {
 
   const next5hours = weather?.slice(2, 7).map((element, i) => {
     return (
-      <div className=" flex flex-col justify-center items-center py-2">
+      <div className=" flex flex-col justify-center items-center py-2" key={i}>
         {i == 0 ? (
           <p> now</p>
         ) : (
@@ -212,4 +212,4 @@ function weatherScreen({ location }: weatherScreenProps) {
   )
 }
 
-export default weatherScreen
+export default WeatherScreen

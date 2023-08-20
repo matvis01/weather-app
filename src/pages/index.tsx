@@ -1,6 +1,4 @@
-import Image from "next/image"
 import { Inter } from "next/font/google"
-import NavBar from "../components/navBar"
 import { useEffect, useState } from "react"
 import { themeChange } from "theme-change"
 import CitySearchBox from "../components/citySearchBox"
@@ -15,11 +13,11 @@ const themeSelect = (
     <option disabled value="cupcake">
       Pick a theme
     </option>
-    <option value="">Default</option>
+    <option value="">Dark</option>
     <option value="light">Light</option>
     <option value="retro">Retro</option>
     <option value="cupcake">Cupcake</option>
-    <option value="cyberpunk">Cyberpunk</option>
+    {/* <option value="cyberpunk">Cyberpunk</option> */}
   </select>
 )
 

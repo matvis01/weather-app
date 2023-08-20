@@ -12,7 +12,7 @@ type locationWithTemp = {
   temp: number
 }
 
-function favoriteLocations({
+function FavoriteLocations({
   currentLocation,
   changeLocation,
 }: favoriteLocationsProps) {
@@ -22,26 +22,25 @@ function favoriteLocations({
   >([])
   const [removing, setRemoving] = useState(false)
 
-  function fetchData() {
-    let locWithTemps: locationWithTemp[] = []
-    locations.forEach((location) => {
-      axios
-        .get(
+  async function fetchData() {
+    try {
+      const promises = locations.map(async (location) => {
+        const response = await axios.get(
           `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${location?.lat}&lon=${location?.lon}`
         )
-        .then((response) => {
-          const temp =
-            response.data.properties.timeseries[0].data.instant.details
-          locWithTemps.push({
-            location: location,
-            temp: temp.air_temperature,
-          })
-          setLocationsWithTemp(locWithTemps)
-        })
-        .catch((error) => {
-          console.log(error)
-        })
-    })
+        const temp = response.data.properties.timeseries[0].data.instant.details
+        return {
+          location: location,
+          temp: temp.air_temperature,
+        }
+      })
+
+      const locWithTemps = await Promise.all(promises)
+      console.log(locWithTemps)
+      setLocationsWithTemp([...locWithTemps])
+    } catch (error) {
+      console.error(error)
+    }
   }
   useEffect(() => {
     fetchData()
@@ -57,7 +56,7 @@ function favoriteLocations({
       <div className="flex  items-center gap-2">
         <button
           className="btn btn-primary w-fit"
-          disabled={!currentLocation}
+          disabled={!currentLocation || locations.includes(currentLocation)}
           onClick={() => {
             if (currentLocation && !locations.includes(currentLocation)) {
               setLocations((prev) => [currentLocation, ...prev])
@@ -77,6 +76,7 @@ function favoriteLocations({
           <button
             className="btn btn-secondary "
             onClick={() => setRemoving(!removing)}
+            disabled={locations.length === 0}
           >
             x
           </button>
@@ -86,11 +86,13 @@ function favoriteLocations({
         {locationsWithTemp?.map((location, i) => {
           return (
             <button
+              key={i}
               onClick={() => {
                 if (removing) {
                   setLocations((prev) =>
                     prev.filter((loc) => loc !== location.location)
                   )
+                  locations.length === 1 && setRemoving(false)
                 } else {
                   changeLocation(location.location)
                 }
@@ -117,4 +119,4 @@ function favoriteLocations({
   )
 }
 
-export default favoriteLocations
+export default FavoriteLocations

@@ -36,7 +36,7 @@ type locationProps = {
   setLocation: (place: location) => void // or use the actual type if available
 }
 
-const Autocomplete = ({ setLocation }: locationProps) => {
+const CitySearchBox = ({ setLocation }: locationProps) => {
   const [value, setValue] = useState<PlaceType | null>(null)
   const [inputValue, setInputValue] = useState("")
   const [options, setOptions] = useState<readonly PlaceType[]>([])
@@ -92,11 +92,9 @@ const Autocomplete = ({ setLocation }: locationProps) => {
     fetch({ input: inputValue }, (results?: readonly PlaceType[]) => {
       if (active) {
         let newOptions: readonly PlaceType[] = []
-
-        if (value) {
-          newOptions = [value]
-        }
-
+        // if (value) {
+        //   newOptions = [value]
+        // }
         if (results) {
           newOptions = [...newOptions, ...results]
         }
@@ -123,7 +121,6 @@ const Autocomplete = ({ setLocation }: locationProps) => {
         street: null,
         zipCode: null,
       }
-      console.log(results[0])
       results[0].address_components.forEach((component) => {
         component.types.forEach((type) => {
           if (
@@ -151,9 +148,18 @@ const Autocomplete = ({ setLocation }: locationProps) => {
     }
     getGeoCode()
   }, [value])
-
+  console.log(options)
   return (
-    <div className="flex flex-col items-center justify-center w-full">
+    <form
+      className="flex flex-col items-center justify-center w-full"
+      onSubmit={(e) => {
+        e.preventDefault()
+        setFocused(false)
+        setValue(options[0])
+        setInputValue(options[0].structured_formatting.main_text)
+        setOptions([])
+      }}
+    >
       <input
         type="text"
         className="input input-bordered border-primary w-full"
@@ -161,34 +167,37 @@ const Autocomplete = ({ setLocation }: locationProps) => {
         value={inputValue}
         onChange={(event) => setInputValue(event.target.value)}
         onFocus={() => setFocused(true)}
+        onBlur={() => setTimeout(() => setFocused(false), 100)}
       />
       {options.length > 0 && focused && (
-        <ul className="mt-1 space-y-1 p-2 shadow-md bg-white z-10 absolute  top-32 md:top-16">
-          {options.map((option, index) => (
-            <li
-              key={index}
-              className="p-2 cursor-pointer hover:bg-primary relative z-10"
-              onClick={() => {
-                setOptions([])
-                setValue(option)
-                setInputValue(option.structured_formatting.main_text)
-                setFocused(false)
-              }}
-            >
-              <div className="flex items-center space-x-2">
-                <div>
-                  {option.structured_formatting.main_text}
-                  <p className="text-sm text-gray-500">
-                    {option.structured_formatting.secondary_text}
-                  </p>
+        <ul className="mt-1 space-y-1 p-2 shadow-md bg-white z-10 absolute  top-40 md:top-28">
+          {options.map((option, index) => {
+            return (
+              <li
+                key={index}
+                className="p-2 cursor-pointer hover:bg-primary relative z-10"
+                onClick={() => {
+                  setOptions([])
+                  setValue(option)
+                  setInputValue(option.structured_formatting.main_text)
+                  setFocused(false)
+                }}
+              >
+                <div className="flex items-center space-x-2">
+                  <div>
+                    {option.structured_formatting.main_text}
+                    <p className="text-sm text-gray-500">
+                      {option.structured_formatting.secondary_text}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </li>
-          ))}
+              </li>
+            )
+          })}
         </ul>
       )}
-    </div>
+    </form>
   )
 }
 
-export default Autocomplete
+export default CitySearchBox
