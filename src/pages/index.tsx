@@ -8,32 +8,33 @@ import FavoriteLocations from "../components/favoriteLocations"
 
 const inter = Inter({ subsets: ["latin"] })
 
-const themeSelect = (
-  <select className="select select-primary   m-2" data-choose-theme>
-    <option disabled value="cupcake">
-      Pick a theme
-    </option>
-    <option value="">Dark</option>
-    <option value="light">Light</option>
-    <option value="retro">Retro</option>
-    <option value="cupcake">Cupcake</option>
-    {/* <option value="cyberpunk">Cyberpunk</option> */}
-  </select>
-)
-
 export default function Home() {
   const [location, setLocation] = useState<location>()
-
   useEffect(() => {
     themeChange(false)
-  }, [])
+  }, [location])
+
+  const themeSelect = (
+    <select className="select select-primary" data-choose-theme>
+      <option disabled value="">
+        Pick a theme
+      </option>
+      <option value="cupcake">Cupcake</option>
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="retro">Retro</option>
+    </select>
+  )
 
   return (
-    <div className=" min-h-screen w-full gap-4 p-8 flex flex-col mainGrid">
-      <div className="flex items-center justify-center gap-2 ">
-        <CitySearchBox setLocation={(place: location) => setLocation(place)} />
+    <div className=" min-h-screen w-full gap-4 p-8 pt-4 flex flex-col mainGrid">
+      <div className="flex items-center justify-center gap-2">
+        <CitySearchBox
+          setLocation={(place: location) => setLocation(place)}
+          location={location}
+        />
       </div>
-      <div className=" row-span-1 col-span-1  flex justify-end order-first md:order-none">
+      <div className=" row-span-1 col-span-1 flex justify-end items-center order-first md:order-none">
         {themeSelect}
       </div>
       <div className="row-span-1 col-span-1 shadow-xl">

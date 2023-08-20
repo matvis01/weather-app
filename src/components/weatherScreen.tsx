@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react"
 import axios from "axios"
 import { location } from "../types/location"
 import { WeatherForecast, SunData } from "../types/weather"
+import { join } from "path"
 
 type weatherScreenProps = {
   location: location | undefined
@@ -25,30 +26,38 @@ function WeatherScreen({ location }: weatherScreenProps) {
   const [weather, setWeather] = useState<WeatherForecast[]>()
   const [sunInfo, setSunInfo] = useState<SunData>()
   const currentWeather = weather?.[0].data.instant.details
-  useEffect(() => {
-    async function fetchData() {
-      if (!location) return
-      try {
-        const response = await axios.get(
-          `https://api.met.no/weatherapi/locationforecast/2.0/complete?lat=${location.lat}&lon=${location.lon}`
-        )
-        setWeather(response.data.properties.timeseries)
-        const sunDataResponse = await axios.get(
-          `https://api.met.no/weatherapi/sunrise/3.0/sun?lat=${location.lat}&lon=${location.lon}`
-        )
-        setSunInfo(sunDataResponse.data)
-      } catch (error) {
-        console.log(error)
-      }
+  async function fetchData() {
+    if (!location) return
+    try {
+      const response = await axios.get(
+        `https://api.met.no/weatherapi/locationforecast/2.0/complete?lat=${location.lat}&lon=${location.lon}`
+      )
+      setWeather(response.data.properties.timeseries)
+      const sunDataResponse = await axios.get(
+        `https://api.met.no/weatherapi/sunrise/3.0/sun?lat=${location.lat}&lon=${location.lon}`
+      )
+      setSunInfo(sunDataResponse.data)
+    } catch (error) {
+      console.log(error)
     }
+  }
+  useEffect(() => {
     fetchData()
   }, [location])
+
+  useEffect(() => {
+    setInterval(() => {
+      fetchData()
+    }, 1000 * 60 * 10)
+  }, [])
+
   const currentDate = new Date()
   const dayOfWeek = currentDate.getDay()
   const month = currentDate.getMonth()
   const dayOfMonth = currentDate.getDate()
 
-  const next5hours = weather?.slice(2, 7).map((element, i) => {
+  const next5hours = weather?.slice(0, 7).map((element, i) => {
+    if (i > 0 && i <= 2) return
     return (
       <div className=" flex flex-col justify-center items-center py-2" key={i}>
         {i == 0 ? (
@@ -192,7 +201,7 @@ function WeatherScreen({ location }: weatherScreenProps) {
               )}
             </p>
             <img
-              className="absolute aspect-auto right-2 -z-10 h-1/3  "
+              className="absolute aspect-auto right-0 -z-10 h-1/4 md:h-1/3 md:right-2 lg:1/4 "
               src={
                 require(`../../public/assets/png/${weather[0].data.next_6_hours.summary.symbol_code}.png`)
                   .default.src

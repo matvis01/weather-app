@@ -36,7 +36,6 @@ function FavoriteLocations({
       })
 
       const locWithTemps = await Promise.all(promises)
-      console.log(locWithTemps)
       setLocationsWithTemp([...locWithTemps])
     } catch (error) {
       console.error(error)
@@ -82,7 +81,7 @@ function FavoriteLocations({
           </button>
         )}
       </div>
-      <div className="w-full h-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 gap-4 align-top ">
+      <div className="w-full  grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 xl:grid-cols-3 gap-4 align-top ">
         {locationsWithTemp?.map((location, i) => {
           return (
             <button

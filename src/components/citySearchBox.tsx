@@ -34,9 +34,10 @@ interface PlaceType {
 
 type locationProps = {
   setLocation: (place: location) => void // or use the actual type if available
+  location?: location
 }
 
-const CitySearchBox = ({ setLocation }: locationProps) => {
+const CitySearchBox = ({ setLocation, location }: locationProps) => {
   const [value, setValue] = useState<PlaceType | null>(null)
   const [inputValue, setInputValue] = useState("")
   const [options, setOptions] = useState<readonly PlaceType[]>([])
@@ -109,6 +110,12 @@ const CitySearchBox = ({ setLocation }: locationProps) => {
   }, [value, inputValue, fetch])
 
   useEffect(() => {
+    if (location && location.city) {
+      setInputValue(location.city)
+    }
+  }, [location])
+
+  useEffect(() => {
     async function getGeoCode() {
       if (!value) return
       const results = await getGeocode({ address: value.description })
@@ -170,7 +177,7 @@ const CitySearchBox = ({ setLocation }: locationProps) => {
         onBlur={() => setTimeout(() => setFocused(false), 100)}
       />
       {options.length > 0 && focused && (
-        <ul className="mt-1 space-y-1 p-2 shadow-md bg-white z-10 absolute  top-40 md:top-28">
+        <ul className="mt-1 space-y-1 p-2 shadow-md bg-white z-10 absolute  top-32 md:top-24">
           {options.map((option, index) => {
             return (
               <li
