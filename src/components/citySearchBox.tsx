@@ -155,10 +155,10 @@ const CitySearchBox = ({ setLocation, location }: locationProps) => {
     }
     getGeoCode()
   }, [value])
-  console.log(options)
+
   return (
     <form
-      className="flex flex-col items-center justify-center w-full"
+      className="flex flex-col dropdown dropdown-bottom items-center justify-center w-full"
       onSubmit={(e) => {
         e.preventDefault()
         setFocused(false)
@@ -173,16 +173,18 @@ const CitySearchBox = ({ setLocation, location }: locationProps) => {
         placeholder="Search location"
         value={inputValue}
         onChange={(event) => setInputValue(event.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setTimeout(() => setFocused(false), 100)}
+        tabIndex={0}
       />
-      {options.length > 0 && focused && (
-        <ul className="mt-1 space-y-1 p-2 shadow-md bg-white z-10 absolute  top-32 md:top-24">
+      {options.length > 0 && (
+        <ul
+          className="dropdown-content z-[1] bg-white menu p-2 shadow   "
+          tabIndex={0}
+        >
           {options.map((option, index) => {
             return (
               <li
                 key={index}
-                className="p-2 cursor-pointer hover:bg-primary relative z-10"
+                className=""
                 onClick={() => {
                   setOptions([])
                   setValue(option)
@@ -190,7 +192,7 @@ const CitySearchBox = ({ setLocation, location }: locationProps) => {
                   setFocused(false)
                 }}
               >
-                <div className="flex items-center space-x-2">
+                <div className="hover:bg-primary">
                   <div>
                     {option.structured_formatting.main_text}
                     <p className="text-sm text-gray-500">
